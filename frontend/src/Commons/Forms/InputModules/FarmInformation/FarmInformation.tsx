@@ -89,14 +89,12 @@ const FarmInfoComponent: React.FC<InputModuleProps> = ({ farmDetails, updateFarm
               options={options}
               width="50%"
             />
-            <div id="btnContainer">
-              <Button
-                type="submit"
-                size="lg"
-                disabled={false}
-                text={ComponentText.NEXT}
-              />
-            </div>
+            <Button
+              type="submit"
+              size="sm"
+              disabled={false}
+              text={ComponentText.NEXT}
+            />
           </StyledSelectContainer>
         </StyledFarmInfo>
       </Form>
@@ -110,6 +108,7 @@ const FarmInfoForm: InputModuleInterface = {
   name: { long: 'Farm Information', short: 'Farm Info' },
   faIcon: faTractor,
   enable: true,
+  status: 'active',
 };
 
 export default FarmInfoForm;

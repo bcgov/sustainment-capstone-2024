@@ -14,11 +14,12 @@ const Container = styled.div`
   background-color: #fff;
   height: 80px;
   padding-bottom: 30px;
+  z-index: 1;
   @media (min-width: ${screenSizes.desktop}) {
     padding-bottom: 50px;
     height: 150px;
     width: 80%;
-    top: 87px;
+    top: 8%;
     order: 0;
   }
 `;

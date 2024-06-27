@@ -19,9 +19,9 @@ import { StyledMain, StyledMainContainer } from './MainPage.styles';
 // This is the skeleton for the Berries workflow
 // Uncomment sections as they are implemented to have them instantiated ;)
 const mockBerriesWorkflow: InputModuleInterface[] = [
-  InputModules.FarmInformation,
-  InputModules.FieldsAndSoil,
-  InputModules.Summary,
+  { ...InputModules.FarmInformation, status: 'active' },
+  { ...InputModules.FieldsAndSoil, status: 'inactive' },
+  { ...InputModules.Summary, status: 'inactive' },
 ];
 
 const getLocalDetails = () => {
@@ -88,41 +88,22 @@ const MainPage: React.FC = () => {
       localStorage.setItem('farmDetails', JSON.stringify(localDetails));
     }
   }, [localDetails]);
-
   /**
    * @summary   Pass this handler to children who need to update InputModule states
    * @desc      A State handler that will update the current form section states,
    *            allowing you to expand/collapse form sections.
    *            ** In the future, also update the ProgressBar status **
-   * @param     formMovement: string => A movement that indicates if you go back or forward
+   * @param formMovement: string => A movement that indicates if you go back or forward
    */
-  const handleFormState = (cmd?: string) => {
-    let moduleID = formStates[currForm].id;
-    let secondModuleID = null;
-
-    switch (cmd) {
-      case 'back':
-        if (currForm >= 0) {
-          secondModuleID = formStates[currForm - 1].id;
-          setCurrForm((prevForm) => prevForm - 1);
-        }
-        break;
-      case 'forward':
-        if (formStates[currForm + 1]) {
-          secondModuleID = formStates[currForm + 1].id;
-          setCurrForm((prevForm) => prevForm + 1);
-        }
-        break;
-      default:
-        console.log('default');
-        if (cmd && Object.keys(InputModules).includes(cmd)) {
-          moduleID = cmd;
-        }
-        break;
-    }
+  const handleFormState = (moduleID: string, nexModuleID?: string, prevModuleID?: string) => {
     const updatedStates = formStates.map((module: InputModuleInterface) => {
-      console.log('moduleID: ', moduleID, 'Second: ', secondModuleID);
-      if (module.id === moduleID || module.id === secondModuleID) {
+      if (module.id === moduleID || module.id === nexModuleID) {
+        return {
+          ...module,
+          enable: !module.enable,
+        };
+      }
+      if (module.id === prevModuleID) {
         return {
           ...module,
           enable: !module.enable,
@@ -130,9 +111,9 @@ const MainPage: React.FC = () => {
       }
       return module;
     });
+    console.log(updatedStates);
     setFormStates(updatedStates);
   };
-
   /**
    * @summary   Handler for updating the Main Data of the Calculator.
    * @desc      This updates the Main Data objet being built, 'farmDetails'.
@@ -144,13 +125,42 @@ const MainPage: React.FC = () => {
   const updateFarmDetails = (newDetails: FarmDetailsInterface) => {
     setFarmDetails(newDetails);
     updateLocalDetails(newDetails);
-    handleFormState('forward');
+    handleFormState(formStates[currForm].id, formStates[currForm + 1].id);
+    setCurrForm((prevForm) => prevForm + 1);
+    setFormStates((prevStates) => prevStates.map((module, index) => {
+      if (index === currForm) {
+        return { ...module, status: 'completed' };
+      }
+      if (index === currForm + 1) {
+        return { ...module, status: 'active' };
+      }
+      return module;
+    }));
+  };
+
+  const handleBackState = () => {
+    handleFormState(formStates[currForm].id, formStates[currForm - 1].id);
+    setCurrForm((prevForm: number): number => {
+      if (prevForm > 0) {
+        return prevForm - 1;
+      }
+      return prevForm;
+    });
+    setFormStates((prevStates) => prevStates.map((module, index) => {
+      if (index === currForm) {
+        return { ...module, status: 'warning' };
+      }
+      if (index === currForm - 1) {
+        return { ...module, status: 'completed' };
+      }
+      return module;
+    }));
   };
 
   return (
     <StyledMain>
       <MainPageHeader />
-      <ProgressBar />
+      <ProgressBar formStates={formStates} />
       <StyledMainContainer>
         {formStates.map((InputModule) => {
           if (InputModule) {
@@ -160,6 +170,7 @@ const MainPage: React.FC = () => {
                 farmDetails={farmDetails}
                 updateFarmDetails={updateFarmDetails}
                 handleFormState={handleFormState}
+                handleBackState={handleBackState}
                 key={InputModule.id}
               />
             );

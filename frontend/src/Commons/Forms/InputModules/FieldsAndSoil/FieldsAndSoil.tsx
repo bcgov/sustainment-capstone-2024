@@ -25,7 +25,7 @@ import { StyledButtonGroupContainer } from './FieldsButtonComponent.styles';
 const FieldsAndSoilComponent: React.FC<InputModuleProps> = ({
   farmDetails,
   updateFarmDetails,
-  handleFormState,
+  handleBackState,
 }) => {
   // Builds field info inside the field form module.
   const [, setFieldsInfo] = useState(farmDetails);
@@ -76,9 +76,15 @@ const FieldsAndSoilComponent: React.FC<InputModuleProps> = ({
     const farmInfo: FarmDetailsInterface = { ...farmDetails };
     updateFarmDetails(farmInfo);
   };
+  const setFormPrev = () => {
+    if (handleBackState) {
+      handleBackState();
+    }
+  };
   const addNewField = () => {
     setFieldAdd(true);
   };
+
   return (
     <>
       {isSubmitted && (
@@ -86,13 +92,12 @@ const FieldsAndSoilComponent: React.FC<InputModuleProps> = ({
           <FieldsListComponent
             farmDetails={farmDetails}
             updateFarmDetails={updateFarmDetails}
-            handleFormState={handleFormState}
           />
           {!isFieldAdded && (
             <FieldsButtonComponent
               addNewField={addNewField}
               submitFarmInfo={submitFarmInfo}
-              handleFormState={handleFormState}
+              handleBackState={setFormPrev}
             />
           )}
         </>
@@ -113,7 +118,7 @@ const FieldsAndSoilComponent: React.FC<InputModuleProps> = ({
                   type="text"
                 />
                 <CustomField
-                  label="Area"
+                  label="Area (Acres)"
                   id="Area"
                   name="Area"
                   type="number"
@@ -158,6 +163,7 @@ const FieldsAndSoil: InputModuleInterface = {
   name: { long: 'Fields and Soil', short: 'Fields' },
   faIcon: faWheatAwn,
   enable: false,
+  status: 'inactive',
 };
 
 export default FieldsAndSoil;
